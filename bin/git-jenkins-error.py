@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-#
+# Authors: chmouel, sileht
 # Simple launch gerrit-jenkins-error inside a git repo would get the failed
 # job for the current commit (using the changeId) or you can add an
 # argument be it the change-id the review number or even something
@@ -14,18 +14,18 @@
 #          Get the python tracebacks :
 #          sed -n '/Traceback/,/-----/ { p;}' /tmp/console*html
 
-__author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
-
 import argparse
 import commands
-from compiler.ast import flatten
 import datetime
 import itertools
 import json
 import operator
+import os
 import re
 import requests
 import sys
+
+from compiler import ast
 
 
 def parse_review_failures(output):
@@ -91,6 +91,9 @@ def inspect_zuul_head(head, change_id):
 
 
 def save_error(output_file, name,  url):
+    if not os.path.exists(os.path.dirname(output_file)):
+        os.makedirs(os.path.dirname(output_file))
+
     if not url:
         print("* %s: No log found" % name)
     else:
@@ -144,7 +147,7 @@ def main():
     merged_queues = itertools.chain.from_iterable(
         itertools.imap(operator.itemgetter('change_queues'),
                        data['pipelines']))
-    changes = flatten(itertools.chain.from_iterable(
+    changes = ast.flatten(itertools.chain.from_iterable(
         itertools.imap(operator.itemgetter('heads'), merged_queues)))
 
     for change in changes:
@@ -177,8 +180,8 @@ def main():
 
     print("Failed Jobs: ")
     for (name, url) in failures:
-        save_error("%s/%s-%s.html" % (
-            args.tmpdir, name, change_id[1:6]), name, url)
+        save_error("%s/%s/%s.html" % (
+            args.tmpdir, change_id[1:6], name), name, url)
 
 
 if __name__ == '__main__':
