@@ -170,7 +170,7 @@ def main():
     if unfinished:
         print("Unfinished Jobs: ")
         for (name, remaining_time, url) in unfinished:
-            print " - %s (%ss): %s" % (name, remaining_time, url)
+            print(" - %s (%ss): %s" % (name, remaining_time, url))
     if not failures:
         print("No failures with Jenkins!! Yay!")
         return
